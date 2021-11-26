@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spider", "Spider\Spider.csproj", "{65A80C0A-5E54-44DA-9761-364BFDE4110C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider.Data", "Spider.Data\Spider.Data.csproj", "{FE7CDE73-0ADE-4348-A2B8-0D086FE4AA9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65A80C0A-5E54-44DA-9761-364BFDE4110C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65A80C0A-5E54-44DA-9761-364BFDE4110C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65A80C0A-5E54-44DA-9761-364BFDE4110C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65A80C0A-5E54-44DA-9761-364BFDE4110C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE7CDE73-0ADE-4348-A2B8-0D086FE4AA9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE7CDE73-0ADE-4348-A2B8-0D086FE4AA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE7CDE73-0ADE-4348-A2B8-0D086FE4AA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE7CDE73-0ADE-4348-A2B8-0D086FE4AA9D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5CE31F2D-B728-4A44-BF3D-471B961D1993}
+	EndGlobalSection
+EndGlobal
