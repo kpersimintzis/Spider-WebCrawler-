@@ -33,26 +33,6 @@ namespace Spider.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-        }
-
-        public class SpiderDBContextFactory : IDesignTimeDbContextFactory<SpiderDbContext>
-        {
-            public readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            public SpiderDbContext CreateDbContext(string[] args)
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<SpiderDbContext>();
-                optionsBuilder.UseSqlServer(connStr);
-                optionsBuilder.UseLoggerFactory(_loggerFactory);
-
-                return new SpiderDbContext(optionsBuilder.Options);
-            }
-
-        }
-
-        public const string connStr = "Server=DESKTOP-F8K7M9N;Database=SpiderDb;Trusted_Connection=True;MultipleActiveResultSets=true";
-        static void Main(string[] args)
-        {
-            
-        }
+        }       
     }
 }
