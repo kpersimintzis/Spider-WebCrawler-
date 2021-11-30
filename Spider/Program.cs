@@ -5,18 +5,30 @@ using Microsoft.EntityFrameworkCore.Design;
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+//using Microsoft.Extensions.Configuration.FileExtensions;
+using Microsoft.Extensions.Configuration.Json;
+using System.Net;
 
 namespace Spider
 {
     class Program
     {
+
         public class SpiderDBContextFactory : IDesignTimeDbContextFactory<SpiderDbContext>
         {
             public readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             public SpiderDbContext CreateDbContext(string[] args)
             {
+                IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("AppSettings.json", true, true)
+                .Build();
+
                 var optionsBuilder = new DbContextOptionsBuilder<SpiderDbContext>();
-                optionsBuilder.UseSqlServer(connStr);
+                optionsBuilder.UseSqlServer(config.GetConnectionString("SpiderDatabase"));
                 optionsBuilder.UseLoggerFactory(_loggerFactory);
 
                 return new SpiderDbContext(optionsBuilder.Options);
@@ -24,11 +36,15 @@ namespace Spider
 
         }
 
-        public const string connStr = "Server=DESKTOP-ROF0625\\ADOXX15EN;Database=SpiderDb;Trusted_Connection=True;MultipleActiveResultSets=true";
-
+        public const string root = "https://en.wikipedia.org/wiki/Web_crawler";
         static void Main(string[] args)
         {
-
+            using (WebClient client = new WebClient())
+            {
+                string htmlCode = client.DownloadString(root);
+                Console.WriteLine(htmlCode);
+            }
+            
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))
             {
                 var pages = context.Pages.AsQueryable();
