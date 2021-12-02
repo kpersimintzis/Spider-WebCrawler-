@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 //using Microsoft.Extensions.Configuration.FileExtensions;
 using Microsoft.Extensions.Configuration.Json;
 using System.Net;
+using HtmlAgilityPack;
 
 namespace Spider
 {
@@ -42,8 +43,15 @@ namespace Spider
             using (WebClient client = new WebClient())
             {
                 string htmlCode = client.DownloadString(root);
-                Console.WriteLine(htmlCode);
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(htmlCode);
+                var nodes = htmlDoc.DocumentNode.Descendants("a").Where(x => x.Attributes["href"] != null);
+                foreach (var node in nodes)
+                {
+                    Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}");
+                }
             }
+            return;
             
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))
             {
