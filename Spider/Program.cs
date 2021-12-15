@@ -34,7 +34,6 @@ namespace Spider
                 return new SpiderDbContext(optionsBuilder.Options);
             }
         }
-
         public static void WalkDfs(Uri uri, HashSet<string> visited)
         {
             if (visited.Contains(uri.AbsoluteUri)) return;
@@ -127,11 +126,66 @@ namespace Spider
                 }
             }
         }
+        public static void WalkBfsWithoutRecursion(Uri uri)
+        {
+            Queue<Uri> queueOfUris = new Queue<Uri>();
+            queueOfUris.Enqueue(uri);
+
+            HashSet<string> visited = new HashSet<string>();
+            visited.Add(uri.AbsoluteUri);
+
+            while (queueOfUris.Count != 0)
+            {
+                uri = queueOfUris.Dequeue();
+                using (WebClient client = new WebClient())
+                {
+                    visited.Add(uri.AbsoluteUri);
+                    string htmlCode = "";
+                    try
+                    {
+                        htmlCode = client.DownloadString(uri);
+                    }
+                    catch (WebException) { return; }
+
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(htmlCode);
+                    var nodes = htmlDoc.DocumentNode.Descendants("a").Where(x => x.Attributes["href"] != null);
+
+                    foreach (var node in nodes)
+                    {
+                        if (Uri.TryCreate(node.Attributes["href"].Value, UriKind.RelativeOrAbsolute, out var _uri))
+                        {
+                            if (!_uri.IsAbsoluteUri && Uri.TryCreate(uri, _uri, out var _combinedUri))
+                            {
+                                Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
+                                                $"is absolute? : {_uri.IsAbsoluteUri} after combined : {_combinedUri.IsAbsoluteUri} " +
+                                                $"new Uri: {_combinedUri.AbsoluteUri}");
+                                _uri = _combinedUri;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
+                                                $"is absolute? : {_uri.IsAbsoluteUri}");
+                            }
+
+                            if (!visited.Contains(_uri.AbsoluteUri))
+                            { 
+                                queueOfUris.Enqueue(_uri);
+                                visited.Add(_uri.AbsoluteUri);
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         public const string root = "https://en.wikipedia.org/wiki/Web_crawler";
         static void Main(string[] args)
         {
-            WalkDfs(new Uri(root), new HashSet<string>());
+            //WalkDfs(new Uri(root), new HashSet<string>());
+            WalkBfsWithoutRecursion(new Uri(root));
 
             return;
 
