@@ -35,10 +35,10 @@ namespace Spider
             }
         }
 
-        public static void Walk(Uri uri, HashSet<string> visited)
+        public static void WalkDfs(Uri uri, HashSet<string> visited)
         {
             if (visited.Contains(uri.AbsoluteUri)) return;
-            
+
             using (WebClient client = new WebClient())
             {
                 visited.Add(uri.AbsoluteUri);
@@ -48,7 +48,7 @@ namespace Spider
                     htmlCode = client.DownloadString(uri);
                 }
                 catch (WebException) { return; }
-                
+
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(htmlCode);
                 var nodes = htmlDoc.DocumentNode.Descendants("a").Where(x => x.Attributes["href"] != null);
@@ -62,13 +62,66 @@ namespace Spider
                             Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
                                             $"is absolute? : {_uri.IsAbsoluteUri} after combined : {_combinedUri.IsAbsoluteUri} " +
                                             $"new Uri: {_combinedUri.AbsoluteUri}");
-                            Walk(_combinedUri, visited);
+                            WalkDfs(_combinedUri, visited);
                         }
                         else
                         {
                             Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
                                             $"is absolute? : {_uri.IsAbsoluteUri}");
-                            Walk(_uri, visited);
+                            WalkDfs(_uri, visited);
+                        }
+                    }
+                }
+            }
+        }
+        public static void WalkDfsWithoutRecursion(Uri uri)
+        {
+            Stack<Uri> stackOfUris = new Stack<Uri>();
+            stackOfUris.Push(uri);
+
+            HashSet<string> visited = new HashSet<string>();
+            visited.Add(uri.AbsoluteUri);
+
+            while (stackOfUris.Count != 0)
+            {
+                uri = stackOfUris.Pop();
+                using (WebClient client = new WebClient())
+                {
+                    visited.Add(uri.AbsoluteUri);
+                    string htmlCode = "";
+                    try
+                    {
+                        htmlCode = client.DownloadString(uri);
+                    }
+                    catch (WebException) { return; }
+
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(htmlCode);
+                    var nodes = htmlDoc.DocumentNode.Descendants("a").Where(x => x.Attributes["href"] != null);
+
+                    foreach (var node in nodes.Reverse())
+                    {
+                        if (Uri.TryCreate(node.Attributes["href"].Value, UriKind.RelativeOrAbsolute, out var _uri))
+                        {
+                            if (!_uri.IsAbsoluteUri && Uri.TryCreate(uri, _uri, out var _combinedUri))
+                            {
+                                Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
+                                                $"is absolute? : {_uri.IsAbsoluteUri} after combined : {_combinedUri.IsAbsoluteUri} " +
+                                                $"new Uri: {_combinedUri.AbsoluteUri}");
+                                _uri = _combinedUri;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"name:{node.Attributes["href"].Name}, value: {node.Attributes["href"].Value}" +
+                                                $"is absolute? : {_uri.IsAbsoluteUri}");
+                            }
+
+                            if (!visited.Contains(_uri.AbsoluteUri))
+                            { 
+                                stackOfUris.Push(_uri);
+                                visited.Add(_uri.AbsoluteUri);
+
+                            }
                         }
                     }
                 }
@@ -78,8 +131,8 @@ namespace Spider
         public const string root = "https://en.wikipedia.org/wiki/Web_crawler";
         static void Main(string[] args)
         {
-            Walk(new Uri(root), new HashSet<string>());
-            
+            WalkDfs(new Uri(root), new HashSet<string>());
+
             return;
 
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))
