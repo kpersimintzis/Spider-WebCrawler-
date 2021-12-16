@@ -15,8 +15,35 @@ using System.Collections.Generic;
 
 namespace Spider
 {
+    public interface IGraph<TNode>
+    {
+        TNode[] Edges(TNode node);
+    }
+
+    public class InMemoryGraph : IGraph<int>
+    {
+        private readonly (int from, int to)[] edges;
+        public InMemoryGraph((int from, int to)[] edges)
+        {
+            this.edges = edges;
+        }
+        public int[] Edges(int node)
+        {
+            var res = new List<int>();
+            foreach (var (from,to) in edges)
+            {
+                if(node == from)
+                {
+                    res.Add(to);
+                }
+            }
+            return res.ToArray();
+        }
+    }
+
     class Program
     {
+        
         public class SpiderDBContextFactory : IDesignTimeDbContextFactory<SpiderDbContext>
         {
             public readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -73,6 +100,7 @@ namespace Spider
                 }
             }
         }
+
         public static void WalkDfsWithoutRecursion(Uri uri)
         {
             Stack<Uri> stackOfUris = new Stack<Uri>();
@@ -185,8 +213,13 @@ namespace Spider
         static void Main(string[] args)
         {
             //WalkDfs(new Uri(root), new HashSet<string>());
-            WalkBfsWithoutRecursion(new Uri(root));
-
+            //WalkBfsWithoutRecursion(new Uri(root));
+            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
+            IGraph<int> graph = new InMemoryGraph(edges);
+            foreach (var node in graph.Edges(7))
+            {
+                Console.WriteLine(node);
+            }
             return;
 
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))
