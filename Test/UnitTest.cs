@@ -1,9 +1,10 @@
 using System;
 using Xunit;
+using Spider;
 
 namespace Test
 {
-    public class UnitTest1
+    public class UnitTest
     {
         [Fact]
         public void Test1()
