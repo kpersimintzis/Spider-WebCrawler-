@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-//using Microsoft.Extensions.Configuration.FileExtensions;
 using Microsoft.Extensions.Configuration.Json;
 using System.Net;
 using HtmlAgilityPack;
@@ -30,9 +29,9 @@ namespace Spider
         public int[] Edges(int node)
         {
             var res = new List<int>();
-            foreach (var (from,to) in edges)
+            foreach (var (from, to) in edges)
             {
-                if(node == from)
+                if (node == from)
                 {
                     res.Add(to);
                 }
@@ -41,9 +40,43 @@ namespace Spider
         }
     }
 
+    public class Internet : IGraph<Uri>
+    {
+        public Uri[] Edges(Uri uri)
+        {
+            var uris = new List<Uri>();
+            using (WebClient client = new WebClient())
+            {
+                string htmlCode = "";
+                try
+                {
+                    htmlCode = client.DownloadString(uri);
+                }
+                catch (WebException) { return new Uri[] { }; }
+
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(htmlCode);
+                var nodes = htmlDoc.DocumentNode.Descendants("a").Where(x => x.Attributes["href"] != null);
+
+                foreach (var node in nodes)
+                {
+                    if (Uri.TryCreate(node.Attributes["href"].Value, UriKind.RelativeOrAbsolute, out var _uri))
+                    {
+                        if (!_uri.IsAbsoluteUri && Uri.TryCreate(uri, _uri, out var _combinedUri))
+                        {
+                            _uri = _combinedUri;
+                        }
+                        uris.Add(_uri);
+                    }
+                }
+                return uris.ToArray();
+            }
+        }
+    }
+
     class Program
     {
-        
+
         public class SpiderDBContextFactory : IDesignTimeDbContextFactory<SpiderDbContext>
         {
             public readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -61,6 +94,19 @@ namespace Spider
                 return new SpiderDbContext(optionsBuilder.Options);
             }
         }
+        public static void WalkDfsGeneric<T>(IGraph<T> graph, T root, HashSet<T> visited, Action<T> action)
+        {
+            if (visited.Contains(root))
+                return;
+            visited.Add(root);
+            action(root);
+            foreach (var node in graph.Edges(root))
+            {
+                WalkDfsGeneric<T>(graph, node, visited, action);
+            }
+
+        }
+
         public static void WalkDfs(Uri uri, HashSet<string> visited)
         {
             if (visited.Contains(uri.AbsoluteUri)) return;
@@ -100,7 +146,6 @@ namespace Spider
                 }
             }
         }
-
         public static void WalkDfsWithoutRecursion(Uri uri)
         {
             Stack<Uri> stackOfUris = new Stack<Uri>();
@@ -144,7 +189,7 @@ namespace Spider
                             }
 
                             if (!visited.Contains(_uri.AbsoluteUri))
-                            { 
+                            {
                                 stackOfUris.Push(_uri);
                                 visited.Add(_uri.AbsoluteUri);
 
@@ -197,7 +242,7 @@ namespace Spider
                             }
 
                             if (!visited.Contains(_uri.AbsoluteUri))
-                            { 
+                            {
                                 queueOfUris.Enqueue(_uri);
                                 visited.Add(_uri.AbsoluteUri);
 
@@ -216,6 +261,19 @@ namespace Spider
             //WalkBfsWithoutRecursion(new Uri(root));
             var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
             IGraph<int> graph = new InMemoryGraph(edges);
+            WalkDfsGeneric<int>(graph, 1, new HashSet<int>(), x => Console.WriteLine(x));
+            return;
+
+
+            IGraph<Uri> net = new Internet();
+            foreach (var node in net.Edges(new Uri(root)))
+            {
+                Console.WriteLine(node);
+            }
+
+            return;
+
+            //IGraph<int> graph = new InMemoryGraph(edges);
             foreach (var node in graph.Edges(7))
             {
                 Console.WriteLine(node);
