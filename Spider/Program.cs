@@ -18,7 +18,7 @@ namespace Spider
     {
         TNode[] Edges(TNode node);
     }
-
+    
     public class InMemoryGraph : IGraph<int>
     {
         private readonly (int from, int to)[] edges;
@@ -105,6 +105,52 @@ namespace Spider
                 WalkDfsGeneric<T>(graph, node, visited, action);
             }
 
+        }
+
+        public static void WalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        {
+            Stack<T> stack = new Stack<T>();
+            HashSet<T> visited = new HashSet<T>();
+
+            stack.Push(root);
+
+            while (stack.Count != 0)
+            {
+                var node = stack.Pop();
+                action(node);
+
+                foreach(var n in graph.Edges(node).Reverse())
+                {
+                    if (!visited.Contains(n))
+                    {
+                        stack.Push(n);
+                        visited.Add(n);
+                    }
+                }
+            }
+        }
+
+        public static void WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        {
+            Queue<T> stack = new Queue<T>();
+            HashSet<T> visited = new HashSet<T>();
+
+            stack.Enqueue(root);
+
+            while (stack.Count != 0)
+            {
+                var node = stack.Dequeue();
+                action(node);
+
+                foreach (var n in graph.Edges(node))
+                {
+                    if (!visited.Contains(n))
+                    {
+                        stack.Enqueue(n);
+                        visited.Add(n);
+                    }
+                }
+            }
         }
 
         public static void WalkDfs(Uri uri, HashSet<string> visited)
@@ -261,7 +307,8 @@ namespace Spider
             //WalkBfsWithoutRecursion(new Uri(root));
             var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
             IGraph<int> graph = new InMemoryGraph(edges);
-            WalkDfsGeneric<int>(graph, 1, new HashSet<int>(), x => Console.WriteLine(x));
+            WalkBfsWithoutRecursionGeneric(graph, 1, x => Console.WriteLine(x));
+            //WalkDfsGeneric<int>(graph, 1, new HashSet<int>(), x => Console.WriteLine(x));
             return;
 
 
