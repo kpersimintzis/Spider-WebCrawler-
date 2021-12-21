@@ -9,6 +9,68 @@ namespace Walk
 {
     public static class Crawler
     {
+        #region Generic
+        public static void WalkDfsGeneric<T>(IGraph<T> graph, T root, HashSet<T> visited, Action<T> action)
+        {
+            if (visited.Contains(root))
+                return;
+            visited.Add(root);
+            action(root);
+            foreach (var node in graph.Edges(root))
+            {
+                WalkDfsGeneric<T>(graph, node, visited, action);
+            }
+
+        }
+        public static void WalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        {
+            Stack<T> stack = new Stack<T>();
+            HashSet<T> visited = new HashSet<T>();
+
+            stack.Push(root);
+
+            while (stack.Count != 0)
+            {
+                var node = stack.Pop();
+                if (visited.Contains(node))
+                    continue;
+                action(node);
+                visited.Add(node);
+                foreach (var n in graph.Edges(node).Reverse())
+                {
+                    if (!visited.Contains(n))
+                    {
+                        stack.Push(n);
+                        //visited.Add(n);
+                    }
+                }
+            }
+        }
+        public static void WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        {
+            Queue<T> stack = new Queue<T>();
+            HashSet<T> visited = new HashSet<T>();
+
+            stack.Enqueue(root);
+
+            while (stack.Count != 0)
+            {
+                var node = stack.Dequeue();
+                action(node);
+
+                foreach (var n in graph.Edges(node))
+                {
+                    if (!visited.Contains(n))
+                    {
+                        stack.Enqueue(n);
+                        visited.Add(n);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region NonGeneric
         public static void WalkDfs(Uri uri, HashSet<string> visited)
         {
             if (visited.Contains(uri.AbsoluteUri)) return;
@@ -44,40 +106,6 @@ namespace Walk
                                             $"is absolute? : {_uri.IsAbsoluteUri}");
                             WalkDfs(_uri, visited);
                         }
-                    }
-                }
-            }
-        }
-        public static void WalkDfsGeneric<T>(IGraph<T> graph, T root, HashSet<T> visited, Action<T> action)
-        {
-            if (visited.Contains(root))
-                return;
-            visited.Add(root);
-            action(root);
-            foreach (var node in graph.Edges(root))
-            {
-                WalkDfsGeneric<T>(graph, node, visited, action);
-            }
-
-        }
-        public static void WalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
-        {
-            Stack<T> stack = new Stack<T>();
-            HashSet<T> visited = new HashSet<T>();
-
-            stack.Push(root);
-
-            while (stack.Count != 0)
-            {
-                var node = stack.Pop();
-                action(node);
-
-                foreach (var n in graph.Edges(node).Reverse())
-                {
-                    if (!visited.Contains(n))
-                    {
-                        stack.Push(n);
-                        visited.Add(n);
                     }
                 }
             }
@@ -188,28 +216,6 @@ namespace Walk
                 }
             }
         }
-        public static void WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
-        {
-            Queue<T> stack = new Queue<T>();
-            HashSet<T> visited = new HashSet<T>();
-
-            stack.Enqueue(root);
-
-            while (stack.Count != 0)
-            {
-                var node = stack.Dequeue();
-                action(node);
-
-                foreach (var n in graph.Edges(node))
-                {
-                    if (!visited.Contains(n))
-                    {
-                        stack.Enqueue(n);
-                        visited.Add(n);
-                    }
-                }
-            }
-        }
-
+        #endregion
     }
 }
