@@ -7,6 +7,7 @@ using Graph.Models;
 using System.Collections.Generic;
 using Walk;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Test
 {
@@ -19,10 +20,18 @@ namespace Test
         //    return (a + b == b + a);
         //}
 
-        
+        [Property(MaxTest = 10000)]
         public bool TestDfs(Tuple<int,int>[] edges)
         {
-            return true;
+            if (edges.Length == 0) return true;
+            var newEdges = edges.Select(x => (from : x.Item1, to : x.Item2)).ToArray();
+            IGraph<int> graph = new InMemoryGraph<int>(newEdges);
+            List<int> orderOfRecursiveNodes = new List<int>();
+            Crawler.WalkDfsGeneric<int>(graph, newEdges[0].from, new HashSet<int>(), x => orderOfRecursiveNodes.Add(x));
+            
+            List<int> orderOfNonRecursiveNodes =new List<int>();
+            Crawler.WalkDfsWithoutRecursionGeneric(graph, newEdges[0].from, x => orderOfNonRecursiveNodes.Add(x));
+            return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
         }
     }
 }

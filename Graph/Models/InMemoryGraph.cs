@@ -1,22 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Graph.Models
 {
-    public class InMemoryGraph : IGraph<int>
+    public class InMemoryGraph<T> : IGraph<T> where T: IEquatable<T>
     {
-        private readonly (int from, int to)[] edges;
+        private readonly (T from, T to)[] edges;
 
-        public InMemoryGraph((int from, int to)[] edges)
+        public InMemoryGraph((T from, T to)[] edges)
         {
             this.edges = edges;
         }
 
-        public int[] Edges(int node)
+        public T[] Edges(T node)
         {
-            var res = new List<int>();
+            var res = new List<T>();
             foreach (var (from, to) in edges)
             {
-                if (node == from)
+                if (node.Equals(from))
                 {
                     res.Add(to);
                 }

@@ -44,7 +44,7 @@ namespace Spider
             //edges = new (int, int)[] { (1, 2), (1, 3), (2, 1), (3, 4) };
             //edges = new (int, int)[] { (1, 2), (1, 3), (2, 5), (5, 3), (5, 6), (3, 4) };
             edges = new (int, int)[] { (1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (6, 4) };
-            IGraph<int> graph = new InMemoryGraph(edges);
+            IGraph<int> graph = new InMemoryGraph<int>(edges);
 
             Crawler.WalkDfsWithoutRecursionGeneric(graph, 1, x => Console.WriteLine(x));
             Console.WriteLine("\nMethod with recursion:");
