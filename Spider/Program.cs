@@ -38,6 +38,7 @@ namespace Spider
         }
         static void Main(string[] args)
         {
+
             //WalkDfs(new Uri(root), new HashSet<string>());
             //WalkBfsWithoutRecursion(new Uri(root));
             var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
