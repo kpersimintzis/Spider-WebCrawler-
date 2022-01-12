@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Graph;
+using System.Collections;
 
 namespace Walk
 {
@@ -43,6 +44,35 @@ namespace Walk
                         stack.Push(n);
                         //visited.Add(n);
                     }
+                }
+            }
+        }
+
+        public static void BetterWalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        {
+            Stack<IEnumerator> stack = new Stack<IEnumerator>();
+            HashSet<T> visited = new HashSet<T>();
+            action(root);
+            visited.Add(root);
+
+            stack.Push(graph.Edges(root).GetEnumerator());
+
+            while(stack.Count != 0)
+            {
+                var enumerator = stack.Peek();
+                if (enumerator.MoveNext())
+                {
+                    var node = (T)enumerator.Current;
+                    if (!visited.Contains(node))
+                    {
+                        action(node);
+                        visited.Add(node);
+                        stack.Push(graph.Edges(node).GetEnumerator());
+                    }
+                }
+                else
+                {
+                    stack.Pop();
                 }
             }
         }
