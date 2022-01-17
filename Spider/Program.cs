@@ -38,35 +38,12 @@ namespace Spider
         }
         static void Main(string[] args)
         {
-
-            //WalkDfs(new Uri(root), new HashSet<string>());
-            //WalkBfsWithoutRecursion(new Uri(root));
-            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
-            //edges = new (int, int)[] { (1, 2), (1, 3), (2, 1), (3, 4) };
-            //edges = new (int, int)[] { (1, 2), (1, 3), (2, 5), (5, 3), (5, 6), (3, 4) };
-            edges = new (int, int)[] { (1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (6, 4) };
+            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 6), (5, 7)};
             IGraph<int> graph = new InMemoryGraph<int>(edges);
+            Crawler.WalkBfsWithoutRecursionGeneric<int>(graph, 1, 2, x => Console.WriteLine(x));
 
-            Crawler.WalkDfsWithoutRecursionGeneric(graph, 1, x => Console.WriteLine(x));
-            Console.WriteLine("\nMethod with recursion:");
-            Crawler.WalkDfsGeneric<int>(graph, 1, new HashSet<int>(), x => Console.WriteLine(x));
 
             return;
-            IGraph<Uri> net = new Internet();
-            foreach (var node in net.Edges(new Uri(root)))
-            {
-                Console.WriteLine(node);
-            }
-
-            return;
-
-            //IGraph<int> graph = new InMemoryGraph(edges);
-            foreach (var node in graph.Edges(7))
-            {
-                Console.WriteLine(node);
-            }
-            return;
-
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))
             {
                 var pages = context.Pages.AsQueryable();
@@ -78,3 +55,32 @@ namespace Spider
         }
     }
 }
+#region dfsExamples
+////WalkDfs(new Uri(root), new HashSet<string>());
+////WalkBfsWithoutRecursion(new Uri(root));
+//var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 7), (3, 6), (3, 7) };
+////edges = new (int, int)[] { (1, 2), (1, 3), (2, 1), (3, 4) };
+////edges = new (int, int)[] { (1, 2), (1, 3), (2, 5), (5, 3), (5, 6), (3, 4) };
+//edges = new (int, int)[] { (1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (6, 4) };
+//IGraph<int> graph = new InMemoryGraph<int>(edges);
+
+//Crawler.WalkDfsWithoutRecursionGeneric(graph, 1, x => Console.WriteLine(x));
+//Console.WriteLine("\nMethod with recursion:");
+//Crawler.WalkDfsGeneric<int>(graph, 1, new HashSet<int>(), x => Console.WriteLine(x));
+
+//return;
+//IGraph<Uri> net = new Internet();
+//foreach (var node in net.Edges(new Uri(root)))
+//{
+//    Console.WriteLine(node);
+//}
+
+//return;
+
+////IGraph<int> graph = new InMemoryGraph(edges);
+//foreach (var node in graph.Edges(7))
+//{
+//    Console.WriteLine(node);
+//}
+//return;
+#endregion

@@ -47,7 +47,6 @@ namespace Walk
                 }
             }
         }
-
         public static void BetterWalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
         {
             Stack<IEnumerator> stack = new Stack<IEnumerator>();
@@ -57,7 +56,7 @@ namespace Walk
 
             stack.Push(graph.Edges(root).GetEnumerator());
 
-            while(stack.Count != 0)
+            while (stack.Count != 0)
             {
                 var enumerator = stack.Peek();
                 if (enumerator.MoveNext())
@@ -76,24 +75,26 @@ namespace Walk
                 }
             }
         }
-        public static void WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        public static void WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, int n, Action<T> action)
         {
-            Queue<T> stack = new Queue<T>();
+            Queue<(T,int)> queue = new Queue<(T, int)>();
             HashSet<T> visited = new HashSet<T>();
 
-            stack.Enqueue(root);
+            queue.Enqueue((root,n));
 
-            while (stack.Count != 0)
+            while (queue.Count != 0)
             {
-                var node = stack.Dequeue();
+                var (node,_n) = queue.Dequeue();
+                if (_n < 0)
+                    break;
                 action(node);
 
-                foreach (var n in graph.Edges(node))
-                {
-                    if (!visited.Contains(n))
+                foreach (var _node in graph.Edges(node))
+                {                   
+                    if (!visited.Contains(_node))
                     {
-                        stack.Enqueue(n);
-                        visited.Add(n);
+                        queue.Enqueue((_node,_n-1));
+                        visited.Add(_node);
                     }
                 }
             }
