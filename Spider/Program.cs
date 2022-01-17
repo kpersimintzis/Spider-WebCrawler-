@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Graph.Models;
+using System.Threading.Tasks;
 
 namespace Spider
 {
@@ -36,11 +37,11 @@ namespace Spider
                 return new SpiderDbContext(optionsBuilder.Options);
             }
         }
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 6), (5, 7)};
             IGraph<int> graph = new InMemoryGraph<int>(edges);
-            Crawler.WalkBfsWithoutRecursionGeneric<int>(graph, 1, 2, x => Console.WriteLine(x));
+            await Crawler.WalkBfsWithoutRecursionGeneric<int>(graph, 1, 2, x => Console.WriteLine(x));
 
 
             return;

@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Graph.Models
 {
     public class Internet : IGraph<Uri>
     {
-        public Uri[] Edges(Uri uri)
+        public async Task<Uri[]> Edges(Uri uri)
         {
             var uris = new List<Uri>();
             using (WebClient client = new WebClient())
@@ -16,7 +17,7 @@ namespace Graph.Models
                 string htmlCode = "";
                 try
                 {
-                    htmlCode = client.DownloadString(uri);
+                    htmlCode = await client.DownloadStringTaskAsync(uri);
                 }
                 catch (WebException) { return new Uri[] { }; }
 

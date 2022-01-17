@@ -55,10 +55,10 @@ namespace Test
             var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
             IGraph<int> graph = new InMemoryGraph<int>(newEdges);
             List<int> orderOfRecursiveNodes = new List<int>();
-            Crawler.WalkDfsGeneric<int>(graph, newEdges[0].from, new HashSet<int>(), x => orderOfRecursiveNodes.Add(x));
+            Crawler.WalkDfsGeneric<int>(graph, newEdges[0].from, new HashSet<int>(), x => orderOfRecursiveNodes.Add(x)).Wait();
 
             List<int> orderOfNonRecursiveNodes = new List<int>();
-            Crawler.BetterWalkDfsWithoutRecursionGeneric(graph, newEdges[0].from, x => orderOfNonRecursiveNodes.Add(x));
+            Crawler.BetterWalkDfsWithoutRecursionGeneric(graph, newEdges[0].from, x => orderOfNonRecursiveNodes.Add(x)).Wait();
             return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Graph.Models
 {
@@ -12,7 +13,7 @@ namespace Graph.Models
             this.edges = edges;
         }
 
-        public T[] Edges(T node)
+        public async Task<T[]> Edges(T node)
         {
             var res = new List<T>();
             foreach (var (from, to) in edges)

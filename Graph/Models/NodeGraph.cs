@@ -8,7 +8,7 @@ namespace Graph.Models
 {
     public class NodeGraph : IGraph<Node>
     {        
-        public Node[] Edges(Node node)
+        public async Task<Node[]> Edges(Node node)
         {
             return node.Edges;
         }

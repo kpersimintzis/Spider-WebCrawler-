@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Graph
 {
     public interface IGraph<TNode>
     {
-        TNode[] Edges(TNode node);
+        Task<TNode[]> Edges(TNode node);
     }
 }
