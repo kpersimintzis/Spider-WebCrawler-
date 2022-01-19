@@ -39,9 +39,9 @@ namespace Spider
         }
         static async Task Main(string[] args)
         {
-            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (5, 6), (5, 7)};
-            IGraph<int> graph = new InMemoryGraph<int>(edges);
-            await Crawler.WalkBfsWithoutRecursionGeneric<int>(graph, 1, 2, x => Console.WriteLine(x));
+            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
+            IGraph<int> graph = new InMemoryTestGraph<int>(new InMemoryGraph<int>(edges),new Random());
+            await Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, 1, 2, x => Console.WriteLine(x));
 
 
             return;

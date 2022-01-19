@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace Walk
 {
-    public static class Crawler
+    public static class Crawler<T>
     {
         #region Generic
-        public static async Task WalkDfsGeneric<T>(IGraph<T> graph, T root, HashSet<T> visited, Action<T> action)
+        #region Dfs
+        public static async Task WalkDfsGeneric(IGraph<T> graph, T root, HashSet<T> visited, Action<T> action)
         {
             if (visited.Contains(root))
                 return;
@@ -20,11 +21,11 @@ namespace Walk
             action(root);
             foreach (var node in await graph.Edges(root))
             {
-                await WalkDfsGeneric<T>(graph, node, visited, action);
+                await WalkDfsGeneric(graph, node, visited, action);
             }
 
         }
-        public static async Task WalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        public static async Task WalkDfsWithoutRecursionGeneric(IGraph<T> graph, T root, Action<T> action)
         {
             Stack<T> stack = new Stack<T>();
             HashSet<T> visited = new HashSet<T>();
@@ -48,14 +49,14 @@ namespace Walk
                 }
             }
         }
-        public static async Task BetterWalkDfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, Action<T> action)
+        public static async Task BetterWalkDfsWithoutRecursionGeneric(IGraph<T> graph, T root, Action<T> action)
         {
             Stack<IEnumerator> stack = new Stack<IEnumerator>();
             HashSet<T> visited = new HashSet<T>();
             action(root);
             visited.Add(root);
 
-            stack.Push( (await graph.Edges(root)).GetEnumerator());
+            stack.Push((await graph.Edges(root)).GetEnumerator());
 
             while (stack.Count != 0)
             {
@@ -76,25 +77,27 @@ namespace Walk
                 }
             }
         }
-        public static async Task WalkBfsWithoutRecursionGeneric<T>(IGraph<T> graph, T root, int n, Action<T> action)
+        #endregion
+
+        public static async Task WalkBfsWithoutRecursionGeneric(IGraph<T> graph, T root, int n, Action<T> action)
         {
-            Queue<(T,int)> queue = new Queue<(T, int)>();
+            Queue<(T, int)> queue = new Queue<(T, int)>();
             HashSet<T> visited = new HashSet<T>();
 
-            queue.Enqueue((root,n));
+            queue.Enqueue((root, n));
 
             while (queue.Count != 0)
             {
-                var (node,_n) = queue.Dequeue();
+                var (node, _n) = queue.Dequeue();
                 if (_n < 0)
                     break;
                 action(node);
 
                 foreach (var _node in await graph.Edges(node))
-                {                   
+                {
                     if (!visited.Contains(_node))
                     {
-                        queue.Enqueue((_node,_n-1));
+                        queue.Enqueue((_node, _n - 1));
                         visited.Add(_node);
                     }
                 }

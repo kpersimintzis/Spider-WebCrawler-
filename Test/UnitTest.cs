@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Walk;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Test
 {
@@ -48,18 +49,39 @@ namespace Test
         //    return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
         //}
 
-        [Property(MaxTest = 10000)]
-        public bool TestDfs(Tuple<int, int>[] edges)
-        {
-            if (edges.Length == 0) return true;
-            var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
-            IGraph<int> graph = new InMemoryGraph<int>(newEdges);
-            List<int> orderOfRecursiveNodes = new List<int>();
-            Crawler.WalkDfsGeneric<int>(graph, newEdges[0].from, new HashSet<int>(), x => orderOfRecursiveNodes.Add(x)).Wait();
+        //[Property(MaxTest = 10000)]
+        //public bool TestDfs(Tuple<int, int>[] edges)
+        //{
+        //    if (edges.Length == 0) return true;
+        //    var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
+        //    IGraph<int> graph = new InMemoryGraph<int>(newEdges);
+        //    List<int> orderOfRecursiveNodes = new List<int>();
+        //    Crawler<int>.WalkDfsGeneric(graph, newEdges[0].from, new HashSet<int>(), x => orderOfRecursiveNodes.Add(x)).Wait();
 
-            List<int> orderOfNonRecursiveNodes = new List<int>();
-            Crawler.BetterWalkDfsWithoutRecursionGeneric(graph, newEdges[0].from, x => orderOfNonRecursiveNodes.Add(x)).Wait();
-            return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
+        //    List<int> orderOfNonRecursiveNodes = new List<int>();
+        //    Crawler<int>.BetterWalkDfsWithoutRecursionGeneric(graph, newEdges[0].from, x => orderOfNonRecursiveNodes.Add(x)).Wait();
+        //    return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
+        //}
+
+        [Property(MaxTest = 10000)]
+        public bool TestParallelQueues(uint n)
+        {
+            var queue = new Queue<int>();
+            for (int i = 0; i < n; i++)
+            {
+                queue.Enqueue(i);
+            }
+
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < n; i++)
+            {
+                var task = Task.Run(() => queue.Dequeue());
+                //task.Wait();
+                tasks.Add(task);
+            }
+            Task.WhenAll(tasks).Wait();
+            return queue.Count == 0;
+
         }
     }
 }
