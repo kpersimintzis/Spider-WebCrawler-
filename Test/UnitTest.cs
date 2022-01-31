@@ -5,6 +5,7 @@ using Spider;
 using Graph;
 using Graph.Models;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Walk;
 using System.Diagnostics;
 using System.Linq;
@@ -66,18 +67,19 @@ namespace Test
         [Property(MaxTest = 10000)]
         public bool TestParallelQueues(uint n)
         {
-            var queue = new Queue<int>();
-            for (int i = 0; i < n; i++)
-            {
-                queue.Enqueue(i);
-            }
-
+            var queue = new ConcurrentQueue<int>();
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < n; i++)
             {
-                var task = Task.Run(() => queue.Dequeue());
+                var _i = i;
+                var enqueuetask = Task.Run(() => queue.Enqueue(_i));
+                var dequeuetask = Task.Run(() => 
+                { 
+                    while(!queue.TryDequeue(out int result)) {} 
+                });
                 //task.Wait();
-                tasks.Add(task);
+                tasks.Add(dequeuetask);
+                tasks.Add(enqueuetask);
             }
             Task.WhenAll(tasks).Wait();
             return queue.Count == 0;
