@@ -64,25 +64,51 @@ namespace Test
         //    return orderOfNonRecursiveNodes.SequenceEqual(orderOfRecursiveNodes);
         //}
 
+        //[Property(MaxTest = 10000)]
+        //public bool TestParallelQueues(uint n)
+        //{
+        //    var queue = new ConcurrentQueue<int>();
+        //    List<Task> tasks = new List<Task>();
+        //    for (int i = 0; i < n; i++)
+        //    {
+        //        var _i = i;
+        //        var enqueuetask = Task.Run(() => queue.Enqueue(_i));
+        //        var dequeuetask = Task.Run(() => 
+        //        { 
+        //            while(!queue.TryDequeue(out int result)) {} 
+        //        });
+        //        //task.Wait();
+        //        tasks.Add(dequeuetask);
+        //        tasks.Add(enqueuetask);
+        //    }
+        //    Task.WhenAll(tasks).Wait();
+        //    return queue.Count == 0;
+        //}
+
         [Property(MaxTest = 10000)]
-        public bool TestParallelQueues(uint n)
+        public bool TestParallelHashsets(uint n)
         {
-            var queue = new ConcurrentQueue<int>();
-            List<Task> tasks = new List<Task>();
+            var dictionary = new ConcurrentDictionary<int, int>();
+            List<Task<bool>> tasks = new List<Task<bool>>();
             for (int i = 0; i < n; i++)
             {
-                var _i = i;
-                var enqueuetask = Task.Run(() => queue.Enqueue(_i));
-                var dequeuetask = Task.Run(() => 
-                { 
-                    while(!queue.TryDequeue(out int result)) {} 
+                int _i = i;
+                var dictionaryFunctions = Task.Run(() =>
+                {
+                    while (!dictionary.TryAdd(_i, _i)){}
+                    return dictionary.ContainsKey(_i);
+
                 });
-                //task.Wait();
-                tasks.Add(dequeuetask);
-                tasks.Add(enqueuetask);
+                tasks.Add(dictionaryFunctions);
             }
+
             Task.WhenAll(tasks).Wait();
-            return queue.Count == 0;
+            foreach (var task in tasks)
+            {
+                if (!task.Result)
+                    return false;
+            }
+            return true;
 
         }
     }
