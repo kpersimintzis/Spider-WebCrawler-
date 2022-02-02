@@ -6,6 +6,7 @@ using System.Net;
 using Graph;
 using System.Collections;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Walk
 {
@@ -102,6 +103,51 @@ namespace Walk
                     }
                 }
             }
+        }
+
+        public static async Task WalkBfsParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, int parallelism, Action<T> action)
+        {            
+            ConcurrentQueue<(T, int)> queue = new ConcurrentQueue<(T, int)>();
+            ConcurrentDictionary<T,T> visited = new ConcurrentDictionary<T, T>();
+
+            queue.Enqueue((root, n));
+
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < parallelism; i++)
+            {
+                var _i = i;
+                var task = Task.Run(async () => 
+                {
+                    while (queue.Count != 0)
+                    {
+                        Console.WriteLine($"I'm alive. From the {_i} universe");
+
+                        if(queue.TryDequeue(out var result))
+                        {
+                            Console.WriteLine($"The {_i} universe is working on {result}");
+
+                            var (node, _n) = result;
+
+                            if (_n < 0)
+                                break;
+                            action(node);
+
+                            foreach (var _node in await graph.Edges(node))
+                            {                              
+                                if(visited.TryAdd(_node, _node)) 
+                                    queue.Enqueue((_node, _n - 1));                               
+                            }
+                        }
+                        else
+                        {
+                            //await Task.Delay(100);
+                        }
+                    }
+                });
+
+                tasks.Add(task);
+            }
+            await Task.WhenAll(tasks);            
         }
         #endregion
 
