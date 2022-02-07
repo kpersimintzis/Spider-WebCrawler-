@@ -40,11 +40,12 @@ namespace Spider
         }
         static async Task Main(string[] args)
         {
-            var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
-            IGraph<int> graph = new InMemoryTestGraph<int>(new InMemoryGraph<int>(edges),new Random());
-            IGraph<Uri> _internet = new Internet();
-            await Crawler<Uri>.WalkBfsParallelWithoutRecursionGeneric(_internet, new Uri(root), 2, 8, (_uri) => { });
-
+            //var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
+            var edges = new (int, int)[] { (1,-1), (2, -1), (2, -1),(-1, 1), (0,0) };
+            IGraph<int> graph = new InMemoryGraph<int>(edges);
+            //IGraph<Uri> _internet = new Internet();
+            //await Crawler<Uri>.WalkBfsParallelWithoutRecursionGeneric(_internet, new Uri(root), 2, 8, (_uri) => { });
+            await Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, edges[0].Item1, 2, (x) => Console.WriteLine(x));
 
             return;
             using (var context = new SpiderDBContextFactory().CreateDbContext(null))

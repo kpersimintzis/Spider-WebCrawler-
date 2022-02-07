@@ -86,6 +86,7 @@ namespace Walk
             HashSet<T> visited = new HashSet<T>();
 
             queue.Enqueue((root, n));
+            visited.Add(root);
 
             while (queue.Count != 0)
             {
@@ -111,6 +112,7 @@ namespace Walk
             ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
 
             queue.Enqueue((root, n));
+            visited.TryAdd(root, root);
 
             List<Task> tasks = new List<Task>();
             var isProcessing = new bool[parallelism];
@@ -131,7 +133,7 @@ namespace Walk
                             var (node, _n) = result;
 
                             if (_n < 0)
-                                break;
+                                continue;
                             action(node);
 
                             foreach (var _node in await graph.Edges(node))
