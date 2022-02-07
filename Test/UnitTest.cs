@@ -85,31 +85,56 @@ namespace Test
         //    return queue.Count == 0;
         //}
 
+        //[Property(MaxTest = 10000)]
+        //public bool TestParallelHashsets(uint n)
+        //{
+        //    var dictionary = new ConcurrentDictionary<int, int>();
+        //    List<Task<bool>> tasks = new List<Task<bool>>();
+        //    for (int i = 0; i < n; i++)
+        //    {
+        //        int _i = i;
+        //        var dictionaryFunctions = Task.Run(() =>
+        //        {
+        //            while (!dictionary.TryAdd(_i, _i)){}
+        //            return dictionary.ContainsKey(_i);
+
+        //        });
+        //        tasks.Add(dictionaryFunctions);
+        //    }
+
+        //    Task.WhenAll(tasks).Wait();
+        //    foreach (var task in tasks)
+        //    {
+        //        if (!task.Result)
+        //            return false;
+        //    }
+        //    return true;
+
+        //}
+
         [Property(MaxTest = 10000)]
-        public bool TestParallelHashsets(uint n)
+        public bool TestCrawlerSeqVsParallel(Tuple<int, int>[] edges)
         {
-            var dictionary = new ConcurrentDictionary<int, int>();
-            List<Task<bool>> tasks = new List<Task<bool>>();
-            for (int i = 0; i < n; i++)
+            if (edges.Length == 0) return true;
+            var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
+            IGraph<int> graph = new InMemoryGraph<int>(newEdges);
+            List<int> resultOfSeq = new List<int>();
+            Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, 2, (x) => resultOfSeq.Add(x));
+
+            List<int> resultOfParallel = new List<int>();
+            Crawler<int>.WalkBfsParallelWithoutRecursionGeneric(graph, newEdges[0].from, 2, 3, (x) =>
             {
-                int _i = i;
-                var dictionaryFunctions = Task.Run(() =>
+                lock (resultOfParallel)
                 {
-                    while (!dictionary.TryAdd(_i, _i)){}
-                    return dictionary.ContainsKey(_i);
+                    resultOfParallel.Add(x);
+                }
+            }).Wait();
 
-                });
-                tasks.Add(dictionaryFunctions);
-            }
-
-            Task.WhenAll(tasks).Wait();
-            foreach (var task in tasks)
-            {
-                if (!task.Result)
-                    return false;
-            }
-            return true;
-
+            //return true;
+            return resultOfParallel.Count == resultOfSeq.Count;
+            //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
         }
+
+
     }
 }

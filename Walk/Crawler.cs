@@ -106,25 +106,27 @@ namespace Walk
         }
 
         public static async Task WalkBfsParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, int parallelism, Action<T> action)
-        {            
+        {
             ConcurrentQueue<(T, int)> queue = new ConcurrentQueue<(T, int)>();
-            ConcurrentDictionary<T,T> visited = new ConcurrentDictionary<T, T>();
+            ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
 
             queue.Enqueue((root, n));
 
             List<Task> tasks = new List<Task>();
+            var isProcessing = new bool[parallelism];
             for (int i = 0; i < parallelism; i++)
             {
                 var _i = i;
-                var task = Task.Run(async () => 
+                isProcessing[_i] = true;
+                var task = Task.Run(async () =>
                 {
-                    while (queue.Count != 0)
+                    while (isProcessing.Contains(true))
                     {
-                        Console.WriteLine($"I'm alive. From the {_i} universe");
-
-                        if(queue.TryDequeue(out var result))
+                        //Console.WriteLine($"I'm alive. From the {_i} universe");
+                        isProcessing[_i] = (queue.Count != 0);
+                        if (queue.TryDequeue(out var result))
                         {
-                            Console.WriteLine($"The {_i} universe is working on {result}");
+                            //Console.WriteLine($"The {_i} universe is working on {result}");
 
                             var (node, _n) = result;
 
@@ -133,21 +135,23 @@ namespace Walk
                             action(node);
 
                             foreach (var _node in await graph.Edges(node))
-                            {                              
-                                if(visited.TryAdd(_node, _node)) 
-                                    queue.Enqueue((_node, _n - 1));                               
+                            {
+                                if (visited.TryAdd(_node, _node))
+                                    queue.Enqueue((_node, _n - 1));
                             }
                         }
                         else
                         {
-                            //await Task.Delay(100);
+                            //await Task.Delay(1000);
                         }
                     }
+                    isProcessing[_i] = false;
+                    //Console.WriteLine($"I am about to die...{_i}");
                 });
 
                 tasks.Add(task);
             }
-            await Task.WhenAll(tasks);            
+            await Task.WhenAll(tasks);
         }
         #endregion
 

@@ -42,7 +42,8 @@ namespace Spider
         {
             var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
             IGraph<int> graph = new InMemoryTestGraph<int>(new InMemoryGraph<int>(edges),new Random());
-            await Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, 1, 2, x => Console.WriteLine(x));
+            IGraph<Uri> _internet = new Internet();
+            await Crawler<Uri>.WalkBfsParallelWithoutRecursionGeneric(_internet, new Uri(root), 2, 8, (_uri) => { });
 
 
             return;
