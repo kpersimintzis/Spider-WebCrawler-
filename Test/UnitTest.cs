@@ -122,7 +122,7 @@ namespace Test
             Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) => resultOfSeq.Add(x)).Wait();
 
             List<int> resultOfParallel = new List<int>();
-            Crawler<int>.WalkBfsParallelWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, 2, (x) =>
+            Crawler<int>.WalkParallelWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, 2, (x) =>
             {
                 lock (resultOfParallel)
                 {

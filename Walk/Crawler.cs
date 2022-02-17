@@ -106,7 +106,7 @@ namespace Walk
             }
         }
 
-        public static async Task WalkBfsParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, int parallelism, Action<T> action)
+        public static async Task WalkParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, int parallelism, Action<T> action)
         {
             ConcurrentQueue<(T, int)> queue = new ConcurrentQueue<(T, int)>();
             ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
@@ -154,6 +154,31 @@ namespace Walk
             }
             await Task.WhenAll(tasks);
         }
+
+        public static async Task WalkDynamicParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, Action<T> action)
+        {
+            ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
+            ConcurrentBag<Task> tasks = new ConcurrentBag<Task>();
+
+            async Task Process(T node, int n)
+            {
+                if (n < 0)
+                    return;
+
+                action(node);
+                foreach (var _node in await graph.Edges(node))
+                {
+                    if (visited.TryAdd(_node, _node))
+                        tasks.Add(Process(_node, n - 1));
+                }
+            }
+
+            tasks.Add(Process(root, n));
+            visited.TryAdd(root, root);
+
+            await Task.WhenAll(tasks);
+        }
+
         #endregion
 
         #region NonGeneric
