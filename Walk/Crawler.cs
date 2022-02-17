@@ -124,14 +124,12 @@ namespace Walk
                 {
                     while (isProcessing.Contains(true))
                     {
-                        //Console.WriteLine($"I'm alive. From the {_i} universe");
-                        isProcessing[_i] = (queue.Count != 0);
+                        //Console.WriteLine($"I'm alive. From the {_i} universe");                        
                         if (queue.TryDequeue(out var result))
                         {
                             //Console.WriteLine($"The {_i} universe is working on {result}");
 
                             var (node, _n) = result;
-
                             if (_n < 0)
                                 continue;
                             action(node);
@@ -146,6 +144,7 @@ namespace Walk
                         {
                             //await Task.Delay(1000);
                         }
+                        isProcessing[_i] = (queue.Count != 0);
                     }
                     isProcessing[_i] = false;
                     //Console.WriteLine($"I am about to die...{_i}");

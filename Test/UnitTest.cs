@@ -112,17 +112,17 @@ namespace Test
 
         //}
 
-        [Property(MaxTest = 10000)]
+        [Property(MaxTest = 100000)]
         public bool TestCrawlerSeqVsParallel(Tuple<int, int>[] edges)
         {
             if (edges.Length == 0) return true;
             var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
             IGraph<int> graph = new InMemoryGraph<int>(newEdges);
             List<int> resultOfSeq = new List<int>();
-            Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, 2, (x) => resultOfSeq.Add(x)).Wait();
+            Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) => resultOfSeq.Add(x)).Wait();
 
             List<int> resultOfParallel = new List<int>();
-            Crawler<int>.WalkBfsParallelWithoutRecursionGeneric(graph, newEdges[0].from, 2, 2, (x) =>
+            Crawler<int>.WalkBfsParallelWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, 2, (x) =>
             {
                 lock (resultOfParallel)
                 {
@@ -130,12 +130,12 @@ namespace Test
                 }
             }).Wait();
 
-            if(resultOfParallel.Count != resultOfSeq.Count)
-            {
+            //if(resultOfParallel.Count != resultOfSeq.Count)
+            //{
                 
-            }
-            return true;
-            //return resultOfParallel.Count == resultOfSeq.Count;
+            //}
+            //return true;
+            return resultOfParallel.Count == resultOfSeq.Count;
             //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
         }
 
