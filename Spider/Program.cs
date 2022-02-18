@@ -14,6 +14,7 @@ using System.Net;
 using Graph.Models;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Spider
 {
@@ -40,6 +41,25 @@ namespace Spider
         }
         static async Task Main(string[] args)
         {
+            var tasks = new ConcurrentBag<Task>();
+            var task2 = Task.Run(() =>
+            {
+                Thread.Sleep(5000);
+                Console.WriteLine("Task 2.");
+            });
+
+            var task1 = Task.Run( () => 
+            {
+                Console.WriteLine("Task 1.");
+                Thread.Sleep(1000);
+                tasks.Add(task2);
+            });
+
+            tasks.Add(task1);
+            while(tasks.Where(x => !x.IsCompleted).Any()) { }
+
+            Console.WriteLine($"After while. {tasks.Count} tasks.");
+            return;
             //var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
             var edges = new (int, int)[] { (1,-1), (2, -1), (2, -1),(-1, 1), (0,0) };
             IGraph<int> graph = new InMemoryGraph<int>(edges);

@@ -7,6 +7,7 @@ using Graph;
 using System.Collections;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Walk
 {
@@ -169,14 +170,13 @@ namespace Walk
                 foreach (var _node in await graph.Edges(node))
                 {
                     if (visited.TryAdd(_node, _node))
-                        tasks.Add(Process(_node, n - 1));
+                        tasks.Add(Task.Run(() => Process(_node, n - 1).Wait()));
                 }
             }
-
-            tasks.Add(Process(root, n));
             visited.TryAdd(root, root);
+            tasks.Add(Task.Run(() => Process(root, n).Wait()));
 
-            await Task.WhenAll(tasks);
+            while(tasks.Where(x => !x.IsCompleted).Any()) { }
         }
 
         #endregion
