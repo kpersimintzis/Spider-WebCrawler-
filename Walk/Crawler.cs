@@ -159,7 +159,6 @@ namespace Walk
         public static async Task WalkDynamicParallelWithoutRecursionGeneric(IGraph<T> graph, T root, int n, Action<T> action)
         {
             ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
-            ConcurrentBag<Task> tasks = new ConcurrentBag<Task>();
 
             async Task Process(T node, int n)
             {
@@ -167,16 +166,17 @@ namespace Walk
                     return;
 
                 action(node);
+                var tasks = new List<Task>();
                 foreach (var _node in await graph.Edges(node))
                 {
                     if (visited.TryAdd(_node, _node))
-                        tasks.Add(Task.Run(() => Process(_node, n - 1).Wait()));
+                        tasks.Add(Task.Run(() => Process(_node, n - 1)));
                 }
+                await Task.WhenAll(tasks);
             }
-            visited.TryAdd(root, root);
-            tasks.Add(Task.Run(() => Process(root, n).Wait()));
 
-            while(tasks.Where(x => x.IsCompleted).Count() != tasks.Count) { }
+            visited.TryAdd(root, root);
+            await Task.Run(() => Process(root, n));
         }
 
         #endregion
