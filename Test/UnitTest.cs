@@ -140,7 +140,7 @@ namespace Test
         //    //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
         //}
 
-        [Property(MaxTest = 10000)]
+        [Property(MaxTest = 100000)]
         public bool TestCrawlerDynamicParallelVsSeq(Tuple<int, int>[] edges)
         {
             if (edges.Length == 0) return true;
@@ -158,7 +158,10 @@ namespace Test
                 }
             }).Wait();
 
-            //if (resultOfParallel.Count != resultOfSeq.Count)
+            var parallel = resultOfParallel.ToList();
+            var seq = resultOfSeq.ToList();
+
+            //if (parallel.Count != seq.Count)
             //{
 
             //}

@@ -176,7 +176,7 @@ namespace Walk
             visited.TryAdd(root, root);
             tasks.Add(Task.Run(() => Process(root, n).Wait()));
 
-            while(tasks.Where(x => !x.IsCompleted).Any()) { }
+            while(tasks.Where(x => x.IsCompleted).Count() != tasks.Count) { }
         }
 
         #endregion
