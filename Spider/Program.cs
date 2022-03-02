@@ -39,36 +39,62 @@ namespace Spider
                 return new SpiderDbContext(optionsBuilder.Options);
             }
         }
+
+        static async IAsyncEnumerable<T> Foo<T>(IEnumerable<Task<T>> tasks)
+        {
+            foreach (var task in tasks)
+            {
+                T t = await task;
+                yield return t;
+            }
+        }
+
+
+
         static async Task Main(string[] args)
         {
-            var bag = new ConcurrentBag<int>() { 1, 2, 3 };
-            foreach (var item in bag)
+
+            var tasks = new List<Task<int>>();
+            tasks.Add(Task.Run(() => 1));
+            tasks.Add(Task.Run(() => 2));
+            tasks.Add(Task.Run(() => 3));
+
+            await foreach (var item in Foo(tasks))
             {
                 Console.WriteLine(item);
-                bag.Add(4);
             }
-            return;
 
-
-            //var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
-            var edges = new (int, int)[] { (1,-1), (2, -1), (2, -1),(-1, 1), (0,0) };
-            IGraph<int> graph = new InMemoryGraph<int>(edges);
-            //IGraph<Uri> _internet = new Internet();
-            //await Crawler<Uri>.WalkBfsParallelWithoutRecursionGeneric(_internet, new Uri(root), 2, 8, (_uri) => { });
-            await Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, edges[0].Item1, 2, (x) => Console.WriteLine(x));
-
-            return;
-            using (var context = new SpiderDBContextFactory().CreateDbContext(null))
-            {
-                var pages = context.Pages.AsQueryable();
-                foreach (var page in pages)
-                {
-                    Console.WriteLine(page);
-                }
-            }
         }
     }
 }
+
+//var bag = new ConcurrentBag<int>() { 1, 2, 3 };
+//foreach (var item in bag)
+//{
+//    Console.WriteLine(item);
+//    bag.Add(4);
+//}
+//return;
+
+
+////var edges = new (int, int)[] { (1, 2), (1, 3), (2, 4), (2, 5), (3, 6), (3, 7) };
+//var edges = new (int, int)[] { (1,-1), (2, -1), (2, -1),(-1, 1), (0,0) };
+//IGraph<int> graph = new InMemoryGraph<int>(edges);
+////IGraph<Uri> _internet = new Internet();
+////await Crawler<Uri>.WalkBfsParallelWithoutRecursionGeneric(_internet, new Uri(root), 2, 8, (_uri) => { });
+//await Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, edges[0].Item1, 2, (x) => Console.WriteLine(x));
+
+//return;
+//using (var context = new SpiderDBContextFactory().CreateDbContext(null))
+//{
+//    var pages = context.Pages.AsQueryable();
+//    foreach (var page in pages)
+//    {
+//        Console.WriteLine(page);
+//    }
+//}
+
+
 #region dfsExamples
 ////WalkDfs(new Uri(root), new HashSet<string>());
 ////WalkBfsWithoutRecursion(new Uri(root));
