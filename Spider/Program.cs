@@ -42,22 +42,27 @@ namespace Spider
 
         static async IAsyncEnumerable<T> Foo<T>(IEnumerable<Task<T>> tasks)
         {
-            foreach (var task in tasks)
+            while (tasks.Any( t => !t.IsCompleted))
             {
-                T t = await task;
-                yield return t;
+                Task<T> t = await Task.WhenAny(tasks);
+                yield return await t;
             }
         }
-
-
 
         static async Task Main(string[] args)
         {
 
             var tasks = new List<Task<int>>();
-            tasks.Add(Task.Run(() => 1));
-            tasks.Add(Task.Run(() => 2));
-            tasks.Add(Task.Run(() => 3));
+            int end = 3;
+            for (int i = 1; i <= end; i++)
+            {
+                int _i = i;
+                tasks.Add(Task.Run(async () =>
+                {
+                    await Task.Delay((end-_i +1)*1000);
+                    return _i;
+                }));
+            }
 
             await foreach (var item in Foo(tasks))
             {
