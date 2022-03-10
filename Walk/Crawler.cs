@@ -27,6 +27,24 @@ namespace Walk
             }
 
         }
+
+        public static async IAsyncEnumerable<T> WalkDfsGenericAsyncEnum(IGraph<T> graph, T root, HashSet<T> visited)
+        {
+            if (visited.Contains(root))
+                yield break ;
+
+            visited.Add(root);
+            yield return root;
+            foreach (var node in await graph.Edges(root))
+            {
+                await foreach (var item in WalkDfsGenericAsyncEnum(graph, node, visited))
+                {
+                    yield return item;
+                } 
+            }
+
+        }
+
         public static async Task WalkDfsWithoutRecursionGeneric(IGraph<T> graph, T root, Action<T> action)
         {
             Stack<T> stack = new Stack<T>();
