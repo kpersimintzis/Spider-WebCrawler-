@@ -42,9 +42,11 @@ namespace Spider
 
         static async IAsyncEnumerable<T> Foo<T>(IEnumerable<Task<T>> tasks)
         {
-            while (tasks.Any( t => !t.IsCompleted))
+            var tasksList = tasks.ToList();
+            while (tasksList.Count != 0)
             {
-                Task<T> t = await Task.WhenAny(tasks);
+                Task<T> t = await Task.WhenAny(tasksList);
+                tasksList.Remove(t);
                 yield return await t;
             }
         }
@@ -59,7 +61,7 @@ namespace Spider
                 int _i = i;
                 tasks.Add(Task.Run(async () =>
                 {
-                    await Task.Delay((end-_i +1)*1000);
+                    await Task.Delay((end-_i +1)*3000);
                     return _i;
                 }));
             }
