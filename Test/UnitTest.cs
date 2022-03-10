@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using Walk;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -140,34 +141,57 @@ namespace Test
         //    //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
         //}
 
+        //[Property(MaxTest = 100000)]
+        //public bool TestCrawlerDynamicParallelVsSeq(Tuple<int, int>[] edges)
+        //{
+        //    if (edges.Length == 0) return true;
+        //    var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
+        //    IGraph<int> graph = new InMemoryGraph<int>(newEdges);
+        //    List<int> resultOfSeq = new List<int>();
+        //    Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) => resultOfSeq.Add(x)).Wait();
+
+        //    List<int> resultOfParallel = new List<int>();
+        //    Crawler<int>.WalkDynamicParallelWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) =>
+        //    {
+        //        lock (resultOfParallel)
+        //        {
+        //            resultOfParallel.Add(x);
+        //        }
+        //    }).Wait();
+
+        //    var parallel = resultOfParallel.ToList();
+        //    var seq = resultOfSeq.ToList();
+
+        //    //if (parallel.Count != seq.Count)
+        //    //{
+
+        //    //}
+        //    //return true;
+        //    return resultOfParallel.Count == resultOfSeq.Count;
+        //    //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
+        //}
+
         [Property(MaxTest = 100000)]
-        public bool TestCrawlerDynamicParallelVsSeq(Tuple<int, int>[] edges)
+        public bool TestCrawlerDfsVsDfsAsyncEnum(Tuple<int, int>[] edges)
         {
             if (edges.Length == 0) return true;
             var newEdges = edges.Select(x => (from: x.Item1, to: x.Item2)).ToArray();
             IGraph<int> graph = new InMemoryGraph<int>(newEdges);
-            List<int> resultOfSeq = new List<int>();
-            Crawler<int>.WalkBfsWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) => resultOfSeq.Add(x)).Wait();
+            List<int> resultOfDfs = new List<int>();
+            Crawler<int>.WalkDfsGeneric(graph, newEdges[0].from, new HashSet<int>(),(x) => resultOfDfs.Add(x)).Wait();
 
-            List<int> resultOfParallel = new List<int>();
-            Crawler<int>.WalkDynamicParallelWithoutRecursionGeneric(graph, newEdges[0].from, int.MaxValue, (x) =>
-            {
-                lock (resultOfParallel)
-                {
-                    resultOfParallel.Add(x);
-                }
-            }).Wait();
-
-            var parallel = resultOfParallel.ToList();
-            var seq = resultOfSeq.ToList();
+            
+            var result = Crawler<int>.WalkDfsGenericAsyncEnum(graph, newEdges[0].from, new HashSet<int>()).ToListAsync().Result;
+           
+            var seq = resultOfDfs.ToList();
 
             //if (parallel.Count != seq.Count)
             //{
 
             //}
             //return true;
-            return resultOfParallel.Count == resultOfSeq.Count;
-            //return resultOfParallel.OrderBy(p => p).SequenceEqual(resultOfSeq.OrderBy(s => s));
+            //return result.Count == resultOfDfs.Count;
+            return result.SequenceEqual(resultOfDfs);
         }
 
 
