@@ -197,6 +197,35 @@ namespace Walk
             await Task.Run(() => Process(root, n));
         }
 
+        public static async IAsyncEnumerable<T> WalkDynamicParallelWithoutRecursionGenericAsyncEnum(IGraph<T> graph, T root, int n)
+        {
+            ConcurrentDictionary<T, T> visited = new ConcurrentDictionary<T, T>();
+
+            async IAsyncEnumerable<T> Process(T node, int n)
+            {
+                if (n < 0)
+                    yield break;
+                
+                yield return node;
+                var tasks = new List<IAsyncEnumerable<T>>();
+
+                foreach (var _node in await graph.Edges(node))
+                {
+                    if (visited.TryAdd(_node, _node))
+                        tasks.Add(Process(_node, n - 1));
+                }
+                //await Task.WhenAll(tasks);
+
+            }
+
+            visited.TryAdd(root, root);
+            //await Task.Run(() => Process(root, n));
+            await foreach (var item in Process(root, n))
+            {
+                yield return item;
+            }
+        }
+
         #endregion
 
         #region NonGeneric

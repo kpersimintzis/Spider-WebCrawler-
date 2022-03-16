@@ -40,33 +40,53 @@ namespace Spider
             }
         }
 
-        static async IAsyncEnumerable<T> Foo<T>(IEnumerable<Task<T>> tasks)
+        static async IAsyncEnumerable<T> Foo<T>(IEnumerable<IAsyncEnumerable<T>> tasks)
         {
-            var tasksList = tasks.ToList();
-            while (tasksList.Count != 0)
+            var enumList = new List<IAsyncEnumerator<T>>();
+            foreach (var asyncEnum in tasks)
             {
-                Task<T> t = await Task.WhenAny(tasksList);
-                tasksList.Remove(t);
-                yield return await t;
+                enumList.Add(asyncEnum.GetAsyncEnumerator());
+            }
+
+            while(enumList.Count > 0)
+            {
+                foreach (var enumerator in enumList.ToList())
+                {
+                    if( await enumerator.MoveNextAsync())
+                    {
+                        yield return enumerator.Current;
+                    }
+                    else
+                    {
+                        enumList.Remove(enumerator);
+                    }
+                }
+            }
+        }
+
+        static async IAsyncEnumerable<int> Even()
+        {
+            int i = 0;
+            while(true)
+            {
+                yield return i;
+                i = i + 2;
+            }
+        }
+
+        static async IAsyncEnumerable<int> Odd()
+        {
+            int i = 1;
+            while (true)
+            {
+                yield return i;
+                i = i + 2;
             }
         }
 
         static async Task Main(string[] args)
         {
-
-            var tasks = new List<Task<int>>();
-            int end = 3;
-            for (int i = 1; i <= end; i++)
-            {
-                int _i = i;
-                tasks.Add(Task.Run(async () =>
-                {
-                    await Task.Delay((end-_i +1)*3000);
-                    return _i;
-                }));
-            }
-
-            await foreach (var item in Foo(tasks))
+            await foreach (var item in Foo(new[] { Even().Take(10), Odd()}))
             {
                 Console.WriteLine(item);
             }
