@@ -15,6 +15,7 @@ using Graph.Models;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Spider
 {
@@ -48,18 +49,21 @@ namespace Spider
                 enumList.Add(asyncEnum.GetAsyncEnumerator());
             }
 
-            while(enumList.Count > 0)
+            while (enumList.Count > 0)
             {
+                var moveNextTasks = new Dictionary<Task<bool>,IAsyncEnumerator<T>>();
                 foreach (var enumerator in enumList.ToList())
                 {
-                    if( await enumerator.MoveNextAsync())
-                    {
-                        yield return enumerator.Current;
-                    }
-                    else
-                    {
-                        enumList.Remove(enumerator);
-                    }
+                    moveNextTasks.Add(enumerator.MoveNextAsync().AsTask(),enumerator);
+                }
+                var completedTask = await Task.WhenAny(moveNextTasks.Keys);
+                if(await completedTask)
+                {
+                    yield return moveNextTasks[completedTask].Current;
+                }
+                else
+                {
+                    enumList.Remove(moveNextTasks[completedTask]);
                 }
             }
         }
@@ -67,8 +71,9 @@ namespace Spider
         static async IAsyncEnumerable<int> Even()
         {
             int i = 0;
-            while(true)
+            while (true)
             {
+                await Task.Delay(1000);
                 yield return i;
                 i = i + 2;
             }
@@ -79,6 +84,7 @@ namespace Spider
             int i = 1;
             while (true)
             {
+                await Task.Delay(5000);
                 yield return i;
                 i = i + 2;
             }
@@ -86,11 +92,14 @@ namespace Spider
 
         static async Task Main(string[] args)
         {
-            await foreach (var item in Foo(new[] { Even().Take(10), Odd()}))
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            await foreach (var item in Foo(new[] { Even(), Odd() }).Take(10))
             {
                 Console.WriteLine(item);
             }
-
+            stopwatch.Stop();
+            Console.WriteLine(stopwatch.Elapsed);
         }
     }
 }
