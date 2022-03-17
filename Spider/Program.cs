@@ -41,7 +41,7 @@ namespace Spider
             }
         }
 
-        static async IAsyncEnumerable<T> Foo<T>(IEnumerable<IAsyncEnumerable<T>> tasks)
+        static async IAsyncEnumerable<T> Merge<T>(IEnumerable<IAsyncEnumerable<T>> tasks)
         {
             var enumList = new List<IAsyncEnumerator<T>>();
             foreach (var asyncEnum in tasks)
@@ -49,12 +49,13 @@ namespace Spider
                 enumList.Add(asyncEnum.GetAsyncEnumerator());
             }
 
+            var moveNextTasks = new Dictionary<Task<bool>, IAsyncEnumerator<T>>();
             while (enumList.Count > 0)
             {
-                var moveNextTasks = new Dictionary<Task<bool>,IAsyncEnumerator<T>>();
                 foreach (var enumerator in enumList.ToList())
                 {
-                    moveNextTasks.Add(enumerator.MoveNextAsync().AsTask(),enumerator);
+                    if(!moveNextTasks.ContainsValue(enumerator))
+                        moveNextTasks.Add(enumerator.MoveNextAsync().AsTask(),enumerator);
                 }
                 var completedTask = await Task.WhenAny(moveNextTasks.Keys);
                 if(await completedTask)
@@ -65,6 +66,7 @@ namespace Spider
                 {
                     enumList.Remove(moveNextTasks[completedTask]);
                 }
+                moveNextTasks.Remove(completedTask);
             }
         }
 
@@ -94,7 +96,8 @@ namespace Spider
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            await foreach (var item in Foo(new[] { Even(), Odd() }).Take(10))
+            //await foreach (var item in Merge(new[] { Even().Take(10), Odd() }))
+            await foreach (var item in AsyncEnumerableEx.Merge(new[] { Even().Take(10), Odd() }))
             {
                 Console.WriteLine(item);
             }
